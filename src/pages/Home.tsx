@@ -20,6 +20,7 @@ const HomePage = () => {
     goPrev,
     goNext,
     goToPage,
+    dismissError,
   } = useHome();
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -51,17 +52,6 @@ const HomePage = () => {
             ) : null}
           </Stat>
         </StatsRow>
-
-        {error ? (
-          <ErrorBox role="alert">
-            <ErrorTitle>Couldn’t load characters</ErrorTitle>
-            <ErrorText>{error}</ErrorText>
-            <ErrorHint>
-              If you clicked back and/or forth very fast, the public API may temporarily limit you.
-              Wait a few seconds and try again later.
-            </ErrorHint>
-          </ErrorBox>
-        ) : null}
 
         {characters.length === 0 && loading ? (
           <LoadingBlock>
@@ -105,6 +95,21 @@ const HomePage = () => {
           }
         />
       )}
+
+      {/* Moved outside Panel to ensure position:fixed works relative to viewport */}
+      {error ? (
+        <ErrorBox role="alert">
+          <CloseError onClick={dismissError} aria-label="Dismiss error">
+            ✕
+          </CloseError>
+          <ErrorTitle>Couldn’t load characters</ErrorTitle>
+          <ErrorText>{error}</ErrorText>
+          <ErrorHint>
+            If you clicked back and/or forth very fast, the public API may temporarily limit you.
+            Wait a few seconds and try again later.
+          </ErrorHint>
+        </ErrorBox>
+      ) : null}
     </Shell>
   );
 };
@@ -205,12 +210,32 @@ const Stat = styled.div`
   }
 `;
 
+const popIn = keyframes`
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+`;
+
 const ErrorBox = styled.div`
-  margin: 10px 0 14px;
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(248, 113, 113, 0.08);
-  border: 1px solid rgba(248, 113, 113, 0.25);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2000;
+
+  width: min(420px, 90vw); /* Slightly smaller width for dialog feel */
+  padding: 24px;
+  border-radius: 18px;
+  
+  background: #2A1215;
+  border: 1px solid #ef4444;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); /* Modal-like shadow */
+  
+  animation: ${popIn} 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 `;
 
 const ErrorTitle = styled.div`
@@ -269,4 +294,27 @@ const Spinner = styled.div`
 const LoadingText = styled.div`
   font-size: 13px;
   color: ${({ theme }) => theme.colors.muted};
+`;
+
+const CloseError = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px; /* Slightly larger touch target */
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+  }
 `;

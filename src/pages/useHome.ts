@@ -242,6 +242,8 @@ export const useHome = () => {
   const goToPage = (p: number) => requestPage(p);
   const setSortOrder = (o: SortOrder) => requestPage(state.page, o); // Trigger fetch on sort change
 
+  const dismissError = () => setState((prev) => ({ ...prev, error: null }));
+
   // Direct pass-through now, sorting is handled at source
   const finalCharacters = state.characters;
 
@@ -258,5 +260,6 @@ export const useHome = () => {
     goNext,
     goToPage,
     setSortOrder,
+    dismissError,
   };
 };
