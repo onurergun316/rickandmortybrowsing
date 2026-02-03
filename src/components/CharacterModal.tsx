@@ -27,12 +27,19 @@ const CharacterModal = ({ characters, index, onClose, onPrev, onNext }: Props) =
 
   return (
     <Overlay onClick={onClose} role="dialog" aria-modal="true">
-      <Modal onClick={(e) => e.stopPropagation()}>
-        <NavButton left onClick={onPrev} aria-label="Previous character">
+      <Modal>
+        <NavButton
+          left
+          onClick={(e) => {
+            e.stopPropagation();
+            onPrev();
+          }}
+          aria-label="Previous character"
+        >
           {"<"}
         </NavButton>
 
-        <Card>
+        <Card onClick={(e) => e.stopPropagation()}>
           <Hero>
             <HeroImg src={character.image} alt={character.name} />
           </Hero>
@@ -82,7 +89,14 @@ const CharacterModal = ({ characters, index, onClose, onPrev, onNext }: Props) =
           </Details>
         </Card>
 
-        <NavButton right onClick={onNext} aria-label="Next character">
+        <NavButton
+          right
+          onClick={(e) => {
+            e.stopPropagation();
+            onNext();
+          }}
+          aria-label="Next character"
+        >
           {">"}
         </NavButton>
 
