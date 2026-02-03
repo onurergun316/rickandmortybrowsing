@@ -3,7 +3,10 @@ import type { ApiInfo } from "../models/ApiResponse";
 import type { Character } from "../models/Character";
 import { rickAndMortyService } from "../services/rickAndMortyService";
 
-export type SortOrder = "created_desc" | "created_asc";
+import { normalizeError } from "../utils/errorUtils";
+import { calculateFetchStrategy, SortOrder } from "../utils/paginationMath";
+
+export type { SortOrder };
 
 type HomeState = {
   page: number;
@@ -31,21 +34,7 @@ const getInitialPage = () => {
   return Number.isFinite(n) && n >= 1 ? n : 1;
 };
 
-function normalizeError(err: unknown): string {
-  const msg = err instanceof Error ? err.message : "Unknown error occurred";
 
-  // Our apiClient throws "Request failed (STATUS)"
-  const match = msg.match(/\((\d+)\)/);
-  const status = match ? Number(match[1]) : null;
-
-  if (status === 429) return "Too many requests. Please slow down and try again.";
-  if (status === 404) return "Page doesn't exist 404";
-  if (msg.toLowerCase().includes("aborted")) return ""; // ignore aborted
-  if (msg.toLowerCase().includes("timed out")) return "Request timed out. Please try again.";
-  if (msg.toLowerCase().includes("failed to fetch")) return "Network error. Please check your connection.";
-
-  return msg;
-}
 
 export const useHome = () => {
   const [state, setState] = useState<HomeState>({
@@ -118,35 +107,10 @@ export const useHome = () => {
       return;
     }
 
-    // 2. Calculate Global Indices needed for this UI Page
-    // UI Pages are 1-indexed, size 20.
-    // Global Indices are 0-indexed.
-    let startIdx = 0;
-    let endIdx = 0;
+    // 2. Calculate Global Indices using helper
+    const { startPage, endPage, startIdx, endIdx } = calculateFetchStrategy(uiPage, totalCount!, order);
 
-    if (order === "created_asc") {
-      startIdx = (uiPage - 1) * 20;
-      endIdx = Math.min(startIdx + 20, totalCount!);
-    } else {
-      // Descending: We want the "last" 20 items, then the "previous" 20...
-      // Total 826. UI Page 1 needs indices 806-826 (exclusive).
-      // Formula: 
-      // Top (exclusive) = Total - (uiPage - 1) * 20
-      // Bottom (inclusive) = Max(0, Top - 20)
-      const top = totalCount! - (uiPage - 1) * 20;
-      const bottom = Math.max(0, top - 20);
 
-      // We want to fetch the range [bottom, top). 
-      // Note: We will fetch "Ascending" from API, then Reverse client-side.
-      startIdx = bottom;
-      endIdx = top;
-    }
-
-    // 3. Map Global Indices to API Pages
-    // API Pages are 1-indexed, size 20.
-    // Index 0 -> Page 1. Index 19 -> Page 1. Index 20 -> Page 2.
-    const startPage = Math.floor(startIdx / 20) + 1;
-    const endPage = Math.floor((endIdx - 1) / 20) + 1; // -1 because endIdx is exclusive
 
     const pagesToFetch = [];
     for (let p = startPage; p <= endPage; p++) {
