@@ -100,12 +100,12 @@ const Overlay = styled.div`
   position: fixed;
   inset: 0;
   backdrop-filter: blur(12px);
-  background: rgba(0, 0, 0, 0.62);
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 40px 20px; /* Safer vertical gaps */
 `;
 
 const Modal = styled.div`
@@ -114,21 +114,28 @@ const Modal = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  max-height: 100%; /* Respect parent padding */
 `;
 
 const Card = styled.div`
-  width: min(760px, 100%);
-  border-radius: 18px;
+  width: min(380px, 100%);
+  border-radius: 20px;
   overflow: hidden;
   background: ${({ theme }) => theme.colors.card};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  box-shadow: ${({ theme }) => theme.shadows.medium};
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); /* Deep shadow for pop */
+  
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 80px); /* Strict limit to ensure gaps top/bottom */
+  overflow-y: auto; /* Scroll inside the card if content is too long */
 `;
 
 const Hero = styled.div`
   width: 100%;
-  aspect-ratio: 16 / 9;
-  background: rgba(255, 255, 255, 0.02);
+  aspect-ratio: 1 / 1;
+  background: #000;
+  flex-shrink: 0; /* Never shrink the image */
 `;
 
 const HeroImg = styled.img`
@@ -177,10 +184,6 @@ const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
 `;
 
 const Item = styled.div`
