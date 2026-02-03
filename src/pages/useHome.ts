@@ -15,7 +15,8 @@ type HomeState = {
 };
 
 const DEFAULT_SORT: SortOrder = "created_desc";
-const UI_PAGE_SIZE = 12;
+// 12-item limit removed to show full 20-item API page
+// const UI_PAGE_SIZE = 12; // Removed
 
 // Small debounce so rapid clicks are coalesced into ONE request.
 // This is a standard way to avoid rate-limit spikes on public APIs.
@@ -170,7 +171,7 @@ export const useHome = () => {
       return state.sortOrder === "created_asc" ? aTime - bTime : bTime - aTime;
     });
 
-    return copy.slice(0, UI_PAGE_SIZE);
+    return copy;
   }, [state.characters, state.sortOrder]);
 
   const canGoPrev = state.page > 1 && Boolean(state.info?.prev);
