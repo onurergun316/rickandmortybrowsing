@@ -39,7 +39,7 @@ function normalizeError(err: unknown): string {
   const status = match ? Number(match[1]) : null;
 
   if (status === 429) return "Too many requests. Please slow down and try again.";
-  if (status === 404) return "Page not found.";
+  if (status === 404) return "Page doesn't exist 404";
   if (msg.toLowerCase().includes("aborted")) return ""; // ignore aborted
   if (msg.toLowerCase().includes("timed out")) return "Request timed out. Please try again.";
   if (msg.toLowerCase().includes("failed to fetch")) return "Network error. Please check your connection.";
@@ -106,6 +106,16 @@ export const useHome = () => {
         if (msg) setState(prev => ({ ...prev, loading: false, error: msg }));
         return;
       }
+    }
+    // 404 CHECK: Now that we definitely have totalPages, check if we are out of bounds.
+    if (totalPages && uiPage > totalPages) {
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: "Page doesn't exist 404",
+        info: { count: totalCount!, pages: totalPages!, next: null, prev: null }
+      }));
+      return;
     }
 
     // 2. Calculate Global Indices needed for this UI Page
