@@ -50,10 +50,6 @@ const HomePage = () => {
               </>
             ) : null}
           </Stat>
-
-          <Stat>
-            Total <strong>{info?.count ?? "—"}</strong>
-          </Stat>
         </StatsRow>
 
         {error ? (
